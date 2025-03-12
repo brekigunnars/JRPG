@@ -48,6 +48,7 @@ public:
         : name(n), health(h), maxHealth(h), stamina(s), maxStamina(s),
           attackPower(atk), defensePower(def), backstory(story) {}
 
+    virtual ~Character() {} 
     int getStamina() { return stamina; }
     void setStamina(int value) { stamina = value; }
     int getAttackPower() { return attackPower; }
@@ -113,6 +114,7 @@ public:
             "The zombie is neither alive nor dead, seeking revenge for its lost humanity.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         health = std::min(health + 20, maxHealth);
@@ -128,6 +130,7 @@ public:
             "This alien fights to prove its superiority over lesser beings.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         std::cout << name << " uses **Plasma Blast**, dealing 25 damage!\n";
@@ -143,6 +146,7 @@ public:
             "Forged in battle, he fights for the eternal glory of Rome.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         std::cout << name << " uses **Shield Wall**, blocking all damage this turn!\n";
@@ -158,6 +162,7 @@ public:
             "The Spartan knows no fear—only victory or death!") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         std::cout << name << " enters **Spartan Fury**! The next attack does DOUBLE DAMAGE!\n";
@@ -173,6 +178,7 @@ public:
             "Darth Wader seeks total domination with his immense power.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         std::cout << name << " uses **Force Choke**, dealing 30 damage and stunning " << opponent.getName() << "!\n";
@@ -188,6 +194,7 @@ public:
             "He uses the Force to defend the innocent against darkness.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        (void)opponent;
         if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
         setSpecialUsed();
         std::cout << name << " uses **Jedi Strike**, dealing 35 damage!\n";
@@ -316,14 +323,13 @@ int main() {
     delete player;
     delete enemy;
     std::cout << R"(
-    _____                         ____                 
-    / ____|                       / __ \                
-    | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
-    | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
-    | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
-    \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
-                                                            
-    )" << std::endl;
+  ██████╗  █████╗ ███╗   ███╗███████╗    ██████╗ ██╗   ██╗███████╗██████╗ 
+ ██╔════╝ ██╔══██╗████╗ ████║██╔════╝   ██╔═══██╗██║   ██║██╔════╝██╔══██╗
+ ██║  ███╗███████║██╔████╔██║█████╗     ██║   ██║██║   ██║█████╗  ██████╔╝
+ ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝     ██║   ██║██║   ██║██╔══╝  ██╔══██╗
+ ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗   ╚██████╔╝╚██████╔╝███████╗██║  ██║
+  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
+)" << std::endl;
 
     
     std::cout << "Would you like to play again? (y/n): ";
