@@ -80,7 +80,7 @@ public:
     }
 
     void displayCharacterTraits() {
-        std::cout<< "You chose " << name << ", which begins with " << health << " and takes " << attackPower << " damage when attacking.\n" << name << " also has a special ability which is a suprise!\n" ;
+        std::cout<< "You chose " << name << ", which begins with " << health << " health and takes " << attackPower << " damage when attacking.\n" << name << " also has a special ability which is a suprise!\n" ;
     };
 
     std::string getName() { return name; }
@@ -92,7 +92,7 @@ public:
 class Zombie : public Character {
 public:
     Zombie(std::string playerName)
-        : Character(playerName + " (Zombie)", 100, 50, 10, 5,
+        : Character(playerName + " (Zombie)", 70, 50, 14, 9,
             "Once a noble warrior, now cursed to roam the earth.\n"
             "The zombie is neither alive nor dead, seeking revenge for its lost humanity.") {}
 
@@ -107,7 +107,7 @@ public:
 class Alien : public Character {
 public:
     Alien(std::string playerName)
-        : Character(playerName + " (Alien)", 100, 50, 10, 5,
+        : Character(playerName + " (Alien)", 75, 50, 14, 7,
             "A mysterious visitor from a distant galaxy.\n"
             "This alien fights to prove its superiority over lesser beings.") {}
 
@@ -122,7 +122,7 @@ public:
 class Roman : public Character {
 public:
     Roman(std::string playerName)
-        : Character(playerName + " (Roman)", 100, 50, 10, 5,
+        : Character(playerName + " (Roman)", 80, 50, 12, 8,
             "A disciplined soldier from the mighty Roman Empire.\n"
             "Forged in battle, he fights for the eternal glory of Rome.") {}
 
@@ -135,7 +135,7 @@ public:
 class Spartan : public Character {
 public:
     Spartan(std::string playerName)
-        : Character(playerName + " (Spartan)", 100, 50, 10, 5,
+        : Character(playerName + " (Spartan)", 90, 50, 11, 7,
             "A fearless warrior raised from birth to battle.\n"
             "The Spartan knows no fear—only victory or death!") {}
 
@@ -148,7 +148,7 @@ public:
 class DarthWader : public Character {
 public:
     DarthWader(std::string playerName)
-        : Character(playerName + " (Darth Wader)", 100, 50, 10, 5,
+        : Character(playerName + " (Darth Wader)", 70, 50, 17, 4,
             "Once a great warrior, now consumed by the dark side.\n"
             "Darth Wader seeks total domination with his immense power.") {}
 
@@ -161,7 +161,7 @@ public:
 class ObiWanKenobi : public Character {
 public:
     ObiWanKenobi(std::string playerName)
-        : Character(playerName + " (Obi-Wan Kenobi)", 100, 50, 10, 5,
+        : Character(playerName + " (Obi-Wan Kenobi)", 95, 50, 12, 7,
             "A wise Jedi Knight, protector of peace in the galaxy.\n"
             "He uses the Force to defend the innocent against darkness.") {}
 
@@ -212,10 +212,27 @@ void battle(Character &player, Character &enemy) {
     }
 }
 
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");  // Windows
+    #else
+        system("clear"); // Linux & macOS
+    #endif
+}
 // Main function with character selection and battle initiation
 int main() {
     std::srand(std::time(0));
-
+    bool playAgain = true;
+    clearScreen();
+    std::cout << R"(
+  ███████╗██╗ ██████╗ ██╗  ██╗████████╗    ██████╗ ███╗  ██╗
+  ██╔════╝██║██╔════╝ ██║  ██║╚══██╔══╝   ██╔═══██╗████╗ ██║
+  █████╗  ██║██║  ███╗███████║   ██║      ██║   ██║██╔██╗██║
+  ██╔══╝  ██║██║   ██║██╔══██║   ██║      ██║   ██║██║╚████║
+  ██║     ██║╚██████╔╝██║  ██║   ██║      ╚██████╔╝██║ ╚███║
+  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═════╝ ╚═╝  ╚══╝
+)" << std::endl;
+    while (playAgain) {
     std::cout << "Choose your character (1-6):\n1. Zombie\n2. Alien\n3. Roman\n4. Spartan\n5. Darth Wader\n6. Obi-wan Kenobi\n";
     int choice;
     std::cin >> choice;
@@ -247,11 +264,13 @@ int main() {
         default: std::cout << "Invalid choice! Defaulting to Alien.\n"; enemy = new Alien("Enemy"); break;
     }
 
+
     player->displayCharacterTraits();
     player->displayBackstory();
-
-    // Start the battle
+    enemy->displayBackstory();
     battle(*player, *enemy);
+    delete player;
+    delete enemy;
     std::cout << R"(
     _____                         ____                 
     / ____|                       / __ \                
@@ -261,8 +280,13 @@ int main() {
     \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
                                                             
     )" << std::endl;
+    std::cout << "Would you like to play again? (y/n): ";
+        char again;
+        std::cin >> again;
+        playAgain = (again == 'y' || again == 'Y');
+    
+    }
+    std::cout << "Thanks for playing! Goodbye!\n";
 
-    delete player;
-    delete enemy;
     return 0;
 }
