@@ -1,9 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <fstream>  // Required for file handling
+#include <fstream> 
 
-// Function to load saved progress
 void loadProgress(int &wins, int &losses) {
     std::ifstream file("progress.txt");
     if (file.is_open()) {
@@ -15,7 +14,6 @@ void loadProgress(int &wins, int &losses) {
     }
 }
 
-// Function to save progress after each game
 void saveProgress(int wins, int losses) {
     std::ofstream file("progress.txt");
     if (file.is_open()) {
@@ -24,7 +22,6 @@ void saveProgress(int wins, int losses) {
     }
 }
 
-// Function to display a bar for health/stamina
 std::string getBar(int value, int maxValue, int length = 10) {
     int filled = (value * length) / maxValue;
     std::string bar = "[";
@@ -35,7 +32,6 @@ std::string getBar(int value, int maxValue, int length = 10) {
     return bar;
 }
 
-// Base class for all characters
 class Character {
 protected:
     std::string name;
@@ -52,7 +48,6 @@ public:
         : name(n), health(h), maxHealth(h), stamina(s), maxStamina(s),
           attackPower(atk), defensePower(def), backstory(story) {}
 
-    // Getters and setters
     int getStamina() { return stamina; }
     void setStamina(int value) { stamina = value; }
     int getAttackPower() { return attackPower; }
@@ -110,7 +105,6 @@ public:
     bool isAlive() { return health > 0; }
 };
 
-// Character Classes with Special Abilities
 class Zombie : public Character {
 public:
     Zombie(std::string playerName)
@@ -201,16 +195,15 @@ public:
     }
 };
 
-// Battle function with enemy AI
 void battle(Character &player, Character &enemy) {
     while (player.isAlive() && enemy.isAlive()) {
         player.displayStatus();
         enemy.displayStatus();
 
         std::cout << "\n" << player.getName() << "'s turn!\n";
-        if (!player.checkSpecialUsed()) {  // If special ability is NOT used, show all options
+        if (!player.checkSpecialUsed()) { 
         std::cout << "1. Attack\n2. Defend (-10 Stamina)\n3. Use Special Ability (One-time use)\n";
-        } else {  // If special ability is already used, remove option 3
+        } else { 
             std::cout << "1. Attack\n2. Defend (-10 Stamina)\n";
         }
 
@@ -222,7 +215,6 @@ void battle(Character &player, Character &enemy) {
         } else if (choice == 2) {
             player.defend();
         } else if (choice == 3) {  
-            // No need to check again, because option 3 is already removed if special was used
             player.useSpecialAbility(enemy);
         }
 
@@ -254,12 +246,11 @@ void battle(Character &player, Character &enemy) {
 
 void clearScreen() {
     #ifdef _WIN32
-        system("cls");  // Windows
+        system("cls"); 
     #else
-        system("clear"); // Linux & macOS
+        system("clear"); 
     #endif
 }
-// Main function with character selection and battle initiation
 int main() {
     std::srand(std::time(0));
     int wins = 0, losses = 0;
@@ -312,11 +303,13 @@ int main() {
     player->displayCharacterTraits();
     player->displayBackstory();
     enemy->displayBackstory();
+    
     battle(*player, *enemy);
+
     if (player->isAlive()) {
-            wins++;  // Player won
+            wins++; 
         } else {
-            losses++;  // Player lost
+            losses++;  
         }
 
         saveProgress(wins, losses);
