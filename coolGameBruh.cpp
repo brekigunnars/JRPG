@@ -13,6 +13,7 @@ std::string getBar(int value, int maxValue, int length = 10) {
     return bar;
 }
 
+// Base class for all characters
 class Character {
 protected:
     std::string name;
@@ -20,13 +21,29 @@ protected:
     int stamina, maxStamina;
     int attackPower;
     int defensePower;
+    std::string backstory;
+    bool stunned = false;
+    bool specialUsed = false;
 
 public:
-    Character(std::string n, int h, int s, int atk, int def)
-        : name(n), health(h), maxHealth(h), stamina(s), maxStamina(s), attackPower(atk), defensePower(def) {}
+    Character(std::string n, int h, int s, int atk, int def, std::string story)
+        : name(n), health(h), maxHealth(h), stamina(s), maxStamina(s),
+          attackPower(atk), defensePower(def), backstory(story) {}
+
+    // Getters and setters
+    int getStamina() { return stamina; }
+    void setStamina(int value) { stamina = value; }
+    int getAttackPower() { return attackPower; }
+    void setAttackPower(int value) { attackPower = value; }
+    bool isStunned() { return stunned; }
+    void setStunned(bool status) { stunned = status; }
+    bool hasUsedSpecial() { return specialUsed; }
+    void setSpecialUsed() { specialUsed = true; }
+
+    virtual void useSpecialAbility(Character &opponent) = 0;
 
     void attack(Character &opponent) {
-        int damage = (std::rand() % attackPower) + 5;
+        int damage = (std::rand() % attackPower) + 10;
         std::cout << name << " attacks " << opponent.getName() << " for " << damage << " damage!\n";
         opponent.takeDamage(damage);
     }
@@ -42,7 +59,7 @@ public:
 
     void takeDamage(int damage) {
         int reducedDamage = (stamina >= 10) ? damage - defensePower : damage;
-        if (reducedDamage < 1) reducedDamage = 1; // Ensure at least 1 damage
+        if (reducedDamage < 1) reducedDamage = 1;
         health -= reducedDamage;
         if (health < 0) health = 0;
         std::cout << name << " took " << reducedDamage << " damage!\n";
@@ -53,83 +70,136 @@ public:
         if (stamina > maxStamina) stamina = maxStamina;
     }
 
+    void displayBackstory() {
+        std::cout << "\n--- Backstory of " << name << " ---\n" << backstory << "\n\n";
+    }
+
     void displayStatus() {
         std::cout << name << " | Health: " << health << " " << getBar(health, maxHealth)
                   << " | Stamina: " << stamina << " " << getBar(stamina, maxStamina) << "\n";
     }
+
+    void displayCharacterTraits() {
+        std::cout<< "You chose " << name << ", which begins with " << health << " and takes " << attackPower << " damage when attacking.\n" << name << " also has a special ability which is a suprise!\n" ;
+    };
 
     std::string getName() { return name; }
     int getHealth() { return health; }
     bool isAlive() { return health > 0; }
 };
 
-// Zombie class
+// Character Classes with Special Abilities
 class Zombie : public Character {
 public:
-    Zombie(std::string playerName) : Character("Zombie", 100, 50, 10, 5) {}
+    Zombie(std::string playerName)
+        : Character(playerName + " (Zombie)", 100, 50, 10, 5,
+            "Once a noble warrior, now cursed to roam the earth.\n"
+            "The zombie is neither alive nor dead, seeking revenge for its lost humanity.") {}
+
+    void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
+        health = std::min(health + 20, maxHealth);
+        std::cout << name << " uses **Undead Regeneration**, healing 20 HP!\n";
+    }
 };
 
-// Alien class
 class Alien : public Character {
 public:
-    Alien(std::string playerName) : Character("Alien", 100, 50, 10, 5) {}
+    Alien(std::string playerName)
+        : Character(playerName + " (Alien)", 100, 50, 10, 5,
+            "A mysterious visitor from a distant galaxy.\n"
+            "This alien fights to prove its superiority over lesser beings.") {}
+
+    void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
+        std::cout << name << " uses **Plasma Blast**, dealing 25 damage!\n";
+        opponent.takeDamage(25);
+    }
 };
 
 class Roman : public Character {
 public:
-    Roman(std::string playerName) : Character("Roman", 100, 50, 10, 5) {}
+    Roman(std::string playerName)
+        : Character(playerName + " (Roman)", 100, 50, 10, 5,
+            "A disciplined soldier from the mighty Roman Empire.\n"
+            "Forged in battle, he fights for the eternal glory of Rome.") {}
+
+    void useSpecialAbility(Character &opponent) override {
+        std::cout << name << " uses **Shield Wall**, blocking all damage this turn!\n";
+        defensePower += 999;
+    }
 };
 
 class Spartan : public Character {
-    public: Spartan(std::string playername) : Character("Spartan", 100, 50, 10, 5) {}
+public:
+    Spartan(std::string playerName)
+        : Character(playerName + " (Spartan)", 100, 50, 10, 5,
+            "A fearless warrior raised from birth to battle.\n"
+            "The Spartan knows no fear—only victory or death!") {}
+
+    void useSpecialAbility(Character &opponent) override {
+        std::cout << name << " enters **Spartan Fury**! The next attack does DOUBLE DAMAGE!\n";
+        attackPower *= 2;
+    }
 };
 
 class DarthWader : public Character {
-    public: DarthWader(std::string playername) : Character("Darth Wader", 100, 50, 10, 5) {}
+public:
+    DarthWader(std::string playerName)
+        : Character(playerName + " (Darth Wader)", 100, 50, 10, 5,
+            "Once a great warrior, now consumed by the dark side.\n"
+            "Darth Wader seeks total domination with his immense power.") {}
+
+    void useSpecialAbility(Character &opponent) override {
+        std::cout << name << " uses **Force Choke**, dealing 30 damage and stunning " << opponent.getName() << "!\n";
+        opponent.takeDamage(30);
+    }
 };
 
 class ObiWanKenobi : public Character {
-    public: ObiWanKenobi(std::string playername) : Character("Obi-wan Kenobi", 100, 50, 10, 5) {}
+public:
+    ObiWanKenobi(std::string playerName)
+        : Character(playerName + " (Obi-Wan Kenobi)", 100, 50, 10, 5,
+            "A wise Jedi Knight, protector of peace in the galaxy.\n"
+            "He uses the Force to defend the innocent against darkness.") {}
 
+    void useSpecialAbility(Character &opponent) override {
+        std::cout << name << " uses **Jedi Strike**, dealing 35 damage!\n";
+        opponent.takeDamage(35);
+    }
 };
 
-
-
-
-
-
-// Function to handle the battle
+// Battle function with enemy AI
 void battle(Character &player, Character &enemy) {
-    std::cout << "\nA wild " << enemy.getName() << " appears!\n";
-
     while (player.isAlive() && enemy.isAlive()) {
-        // Display health and stamina bars
         player.displayStatus();
         enemy.displayStatus();
 
-        // Player's turn
         std::cout << "\n" << player.getName() << "'s turn!\n";
-        std::cout << "1. Attack\n2. Defend (-10 Stamina)\n";
+        std::cout << "1. Attack\n2. Defend (-10 Stamina)\n3. Use Special Ability (One-time use)\n";
         int choice;
         std::cin >> choice;
 
-        if (choice == 1) {
-            player.attack(enemy);
-        } else if (choice == 2) {
-            player.defend();
-        }
+        if (choice == 1) player.attack(enemy);
+        else if (choice == 2) player.defend();
+        else if (choice == 3) player.useSpecialAbility(enemy);
 
         if (!enemy.isAlive()) {
             std::cout << enemy.getName() << " has been defeated! " << player.getName() << " wins!\n";
             break;
         }
 
-        // AI Enemy's Turn
         std::cout << "\n" << enemy.getName() << "'s turn!\n";
-        if (std::rand() % 2 == 0 && enemy.getHealth() > 20) {
-            enemy.attack(player);
+        if (enemy.isStunned()) {
+            std::cout << enemy.getName() << " is stunned and cannot attack!\n";
+            enemy.setStunned(false);
         } else {
-            enemy.defend();
+            int enemyChoice = std::rand() % 3;
+            if (enemyChoice == 0) enemy.attack(player);
+            else if (enemyChoice == 1) enemy.defend();
+            else if (enemyChoice == 2) enemy.useSpecialAbility(player);
         }
 
         if (!player.isAlive()) {
@@ -137,60 +207,62 @@ void battle(Character &player, Character &enemy) {
             break;
         }
 
-        // Regenerate stamina at the end of the turn
         player.regenerateStamina();
         enemy.regenerateStamina();
     }
 }
 
-// Main function
+// Main function with character selection and battle initiation
 int main() {
-    std::srand(std::time(0)); // Seed random number generator
+    std::srand(std::time(0));
 
-    std::string playerName;
-    
-    // Player selects their name and character
-    std::cout << "Please enter your name: ";
-    std::cin >> playerName;
-    std::cout << "Choose your character:\n1. Zombie\n2. Alien\n3. Roman\n4. Spartan\n5.Obi-wan Kenobi\n6. Darth Wader";
+    std::cout << "Choose your character (1-6):\n1. Zombie\n2. Alien\n3. Roman\n4. Spartan\n5. Darth Wader\n6. Obi-wan Kenobi\n";
     int choice;
     std::cin >> choice;
 
-    Character *player, *enemy;
-    
-    if (choice == 1) {
-        player = new Zombie(playerName);
-        enemy = new Alien("Evil Alien");
+    std::cout << "Choose your opponent (1-6):\n";
+    int opponentChoice;
+    std::cin >> opponentChoice;
+
+    Character *player;
+    Character *enemy;
+
+    switch (choice) {
+        case 1: player = new Zombie("Player"); break;
+        case 2: player = new Alien("Player"); break;
+        case 3: player = new Roman("Player"); break;
+        case 4: player = new Spartan("Player"); break;
+        case 5: player = new DarthWader("Player"); break;
+        case 6: player = new ObiWanKenobi("Player"); break;
+        default: std::cout << "Invalid choice! Defaulting to Zombie.\n"; player = new Zombie("Player"); break;
     }
-    else if (choice == 2)
-    {
-        player = new Alien(playerName);
-        enemy = new Zombie("Zombie");
+
+    switch (opponentChoice) {
+        case 1: enemy = new Zombie("Enemy"); break;
+        case 2: enemy = new Alien("Enemy"); break;
+        case 3: enemy = new Roman("Enemy"); break;
+        case 4: enemy = new Spartan("Enemy"); break;
+        case 5: enemy = new DarthWader("Enemy"); break;
+        case 6: enemy = new ObiWanKenobi("Enemy"); break;
+        default: std::cout << "Invalid choice! Defaulting to Alien.\n"; enemy = new Alien("Enemy"); break;
     }
-    else if (choice == 3)
-    {
-        player = new Roman(playerName);
-        enemy = new Spartan("Spartan");
-    }
-    else if (choice == 4)
-    {
-        player = new Spartan(playerName);
-        enemy = new Roman("Roman");
-    }
-    else if (choice == 5)
-    {
-        player = new ObiWanKenobi(playerName);
-        enemy = new DarthWader("Darth Wader");
-    }
-    else{
-        player = new DarthWader(playerName);
-        enemy = new ObiWanKenobi("Obi-wan Kenobi");
-    }
-    
+
+    player->displayCharacterTraits();
+    player->displayBackstory();
+
+    // Start the battle
     battle(*player, *enemy);
+    std::cout << R"(
+    _____                         ____                 
+    / ____|                       / __ \                
+    | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
+    | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
+    | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
+    \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
+                                                            
+    )" << std::endl;
 
     delete player;
     delete enemy;
-
     return 0;
 }
