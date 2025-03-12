@@ -1,6 +1,28 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>  // Required for file handling
+
+// Function to load saved progress
+void loadProgress(int &wins, int &losses) {
+    std::ifstream file("progress.txt");
+    if (file.is_open()) {
+        file >> wins >> losses;
+        file.close();
+    } else {
+        wins = 0;
+        losses = 0;
+    }
+}
+
+// Function to save progress after each game
+void saveProgress(int wins, int losses) {
+    std::ofstream file("progress.txt");
+    if (file.is_open()) {
+        file << wins << " " << losses;
+        file.close();
+    }
+}
 
 // Function to display a bar for health/stamina
 std::string getBar(int value, int maxValue, int length = 10) {
@@ -39,7 +61,7 @@ public:
     void setStunned(bool status) { stunned = status; }
     bool hasUsedSpecial() { return specialUsed; }
     void setSpecialUsed() { specialUsed = true; }
-
+    bool checkSpecialUsed() {return specialUsed; }
     virtual void useSpecialAbility(Character &opponent) = 0;
 
     void attack(Character &opponent) {
@@ -127,6 +149,8 @@ public:
             "Forged in battle, he fights for the eternal glory of Rome.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
         std::cout << name << " uses **Shield Wall**, blocking all damage this turn!\n";
         defensePower += 999;
     }
@@ -140,6 +164,8 @@ public:
             "The Spartan knows no fear—only victory or death!") {}
 
     void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
         std::cout << name << " enters **Spartan Fury**! The next attack does DOUBLE DAMAGE!\n";
         attackPower *= 2;
     }
@@ -153,6 +179,8 @@ public:
             "Darth Wader seeks total domination with his immense power.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
         std::cout << name << " uses **Force Choke**, dealing 30 damage and stunning " << opponent.getName() << "!\n";
         opponent.takeDamage(30);
     }
@@ -166,6 +194,8 @@ public:
             "He uses the Force to defend the innocent against darkness.") {}
 
     void useSpecialAbility(Character &opponent) override {
+        if (hasUsedSpecial()) { std::cout << "Special ability already used!\n"; return; }
+        setSpecialUsed();
         std::cout << name << " uses **Jedi Strike**, dealing 35 damage!\n";
         opponent.takeDamage(35);
     }
@@ -178,13 +208,23 @@ void battle(Character &player, Character &enemy) {
         enemy.displayStatus();
 
         std::cout << "\n" << player.getName() << "'s turn!\n";
+        if (!player.checkSpecialUsed()) {  // If special ability is NOT used, show all options
         std::cout << "1. Attack\n2. Defend (-10 Stamina)\n3. Use Special Ability (One-time use)\n";
+        } else {  // If special ability is already used, remove option 3
+            std::cout << "1. Attack\n2. Defend (-10 Stamina)\n";
+        }
+
         int choice;
         std::cin >> choice;
 
-        if (choice == 1) player.attack(enemy);
-        else if (choice == 2) player.defend();
-        else if (choice == 3) player.useSpecialAbility(enemy);
+        if (choice == 1) {
+            player.attack(enemy);
+        } else if (choice == 2) {
+            player.defend();
+        } else if (choice == 3) {  
+            // No need to check again, because option 3 is already removed if special was used
+            player.useSpecialAbility(enemy);
+        }
 
         if (!enemy.isAlive()) {
             std::cout << enemy.getName() << " has been defeated! " << player.getName() << " wins!\n";
@@ -222,16 +262,10 @@ void clearScreen() {
 // Main function with character selection and battle initiation
 int main() {
     std::srand(std::time(0));
+    int wins = 0, losses = 0;
+    loadProgress(wins, losses);
     bool playAgain = true;
-    clearScreen();
-    std::cout << R"(
-  ███████╗██╗ ██████╗ ██╗  ██╗████████╗    ██████╗ ███╗  ██╗
-  ██╔════╝██║██╔════╝ ██║  ██║╚══██╔══╝   ██╔═══██╗████╗ ██║
-  █████╗  ██║██║  ███╗███████║   ██║      ██║   ██║██╔██╗██║
-  ██╔══╝  ██║██║   ██║██╔══██║   ██║      ██║   ██║██║╚████║
-  ██║     ██║╚██████╔╝██║  ██║   ██║      ╚██████╔╝██║ ╚███║
-  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═════╝ ╚═╝  ╚══╝
-)" << std::endl;
+    
     while (playAgain) {
     std::cout << "Choose your character (1-6):\n1. Zombie\n2. Alien\n3. Roman\n4. Spartan\n5. Darth Wader\n6. Obi-wan Kenobi\n";
     int choice;
@@ -243,7 +277,17 @@ int main() {
 
     Character *player;
     Character *enemy;
+    clearScreen();
+    std::cout << "🏆 **Total Wins:** " << wins << "   ❌ **Total Losses:** " << losses << "\n\n";
 
+    std::cout << R"(
+  ███████╗██╗ ██████╗ ██╗  ██╗████████╗    ██████╗ ███╗  ██╗
+  ██╔════╝██║██╔════╝ ██║  ██║╚══██╔══╝   ██╔═══██╗████╗ ██║
+  █████╗  ██║██║  ███╗███████║   ██║      ██║   ██║██╔██╗██║
+  ██╔══╝  ██║██║   ██║██╔══██║   ██║      ██║   ██║██║╚████║
+  ██║     ██║╚██████╔╝██║  ██║   ██║      ╚██████╔╝██║ ╚███║
+  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═════╝ ╚═╝  ╚══╝
+)" << std::endl;
     switch (choice) {
         case 1: player = new Zombie("Player"); break;
         case 2: player = new Alien("Player"); break;
@@ -269,6 +313,13 @@ int main() {
     player->displayBackstory();
     enemy->displayBackstory();
     battle(*player, *enemy);
+    if (player->isAlive()) {
+            wins++;  // Player won
+        } else {
+            losses++;  // Player lost
+        }
+
+        saveProgress(wins, losses);
     delete player;
     delete enemy;
     std::cout << R"(
@@ -280,13 +331,14 @@ int main() {
     \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
                                                             
     )" << std::endl;
+
+    
     std::cout << "Would you like to play again? (y/n): ";
         char again;
         std::cin >> again;
         playAgain = (again == 'y' || again == 'Y');
     
     }
-    std::cout << "Thanks for playing! Goodbye!\n";
-
+    std::cout << "Thanks for playing! 🏆 Wins: " << wins << " | ❌ Losses: " << losses << "\nGoodbye!\n";
     return 0;
 }
